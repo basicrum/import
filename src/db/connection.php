@@ -6,9 +6,9 @@ class BasicRum_Import_Csv_Db_Connection
 {
 
     private $host     = '192.168.99.100';
-    private $username = '';
-    private $password = '';
-    private $database = '';
+    private $username = 'root';
+    private $password = 'root';
+    private $database = 'basicrum_backoffice';
     private $port     = '3306';
 
     /** @var  mysqli */

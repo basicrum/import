@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-class BasicRum_Import_ResTimings_Segmentation
+class BasicRum_Import_ResTimings_Segmentizer
 {
 
     /**

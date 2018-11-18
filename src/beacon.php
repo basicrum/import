@@ -9,17 +9,20 @@ class BasicRum_Import_Beacon
 {
 
     /** @var \ResourceTimingString */
-    private $decompressor;
+    private $resourceTiming;
 
     private $navigationTimingsNormalizer;
 
     public function __construct()
     {
-        $this->decompressor                = new ResourceTimingString();
+        $this->resourceTiming              = new ResourceTimingString();
         $this->navigationTimingsNormalizer = new BasicRum_Import_Beacon_NavigationTimingsNormalizer();
     }
 
-    public function extract(&$beacons)
+    /**
+     * @param array $beacons
+     */
+    public function extract(array &$beacons)
     {
         foreach ($beacons as $key => $beacon) {
             if (false === $beacon) {
@@ -28,12 +31,11 @@ class BasicRum_Import_Beacon
 
             $date = trim($beacon[0], "'");
 
-
             $beacons[$key] = json_decode(trim(ltrim($beacon[1], "'"), "'\n"), true);
             $beacons[$key]['date'] = $date;
 
             $beacons[$key]['restiming']  = !empty($beacons[$key]['restiming']) ?
-                $this->decompressor->extractPairs(json_decode($beacons[$key]['restiming'], true))
+                $this->resourceTiming->extractPairs(json_decode($beacons[$key]['restiming'], true))
                 : [];
 
             //$this->navigationTimingsNormalizer($beacons[$key]);
