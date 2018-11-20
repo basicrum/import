@@ -24,6 +24,8 @@ class BasicRum_Import_Beacon
      */
     public function extract(array &$beacons)
     {
+        $data = [];
+
         foreach ($beacons as $key => $beacon) {
             if (false === $beacon) {
                 continue;
@@ -34,12 +36,14 @@ class BasicRum_Import_Beacon
             $beacons[$key] = json_decode(trim(ltrim($beacon[1], "'"), "'\n"), true);
             $beacons[$key]['date'] = $date;
 
-            $beacons[$key]['restiming']  = !empty($beacons[$key]['restiming']) ?
-                $this->resourceTiming->extractPairs(json_decode($beacons[$key]['restiming'], true))
-                : [];
+//            $beacons[$key]['restiming']  = !empty($beacons[$key]['restiming']) ?
+//                $this->resourceTiming->extractPairs(json_decode($beacons[$key]['restiming'], true))
+//                : [];
 
-            //$this->navigationTimingsNormalizer($beacons[$key]);
+            $data[] = $this->navigationTimingsNormalizer->normalize($beacons[$key]);
         }
+
+        return $data;
     }
 
 }

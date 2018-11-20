@@ -5,96 +5,76 @@ declare(strict_types=1);
 class BasicRum_Import_Csv_Query_NavigationTimings
 {
 
-    public function navigationUrlInsert($url, $time)
+    /**
+     * @param array $navigationTimings
+     * @return string
+     */
+    public function createTable(array $navigationTimings)
     {
-        $table = 'navigation_timings_urls';
+        $small_INT = "`%s` smallint(5) unsigned NOT NULL";
+
+        $smallIntColumns = [];
+
+        $small_INT_List = [
+            'dns_duration',
+            'connect_duration',
+            'first_byte',
+            'redirect_duration',
+            'last_byte_duration',
+            'first_paint',
+            'first_contentful_paint'
+        ];
+
+        foreach ($small_INT_List as $v) {
+            $smallIntColumns[] = sprintf($small_INT, $v);
+        }
+
+        $createTable =
+            "CREATE TABLE IF NOT EXISTS `navigation_timings` (
+              `page_view_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+              %s,
+              `redirects_count` tinyint(1) NOT NULL DEFAULT 0,
+              `url_id` int(11) NOT NULL DEFAULT 0,
+              `process_id` char(8) NOT NULL DEFAULT '',
+              `guid` char(128) NOT NULL DEFAULT '',
+              `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              PRIMARY KEY (`page_view_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=ascii COLLATE=ascii_bin ROW_FORMAT=COMPRESSED KEY_BLOCK_SIZE=4;";
+
+        return sprintf($createTable, implode(',', $smallIntColumns));
     }
 
+    /**
+     * @param array $navigationTimings
+     * @return string
+     */
     public function navigationTimingInsert(array $navigationTimings)
     {
+        // Temporary hacking
+        unset($navigationTimings['url']);
+        unset($navigationTimings['user_agent']);
+
         $t = 'navigation_timings';
 
         $f = implode(',', array_keys($navigationTimings));
-        $v = implode(',', array_values($navigationTimings));
+        $v = "'" . implode("','", array_values($navigationTimings)) . "'";
 
         $q = "INSERT INTO %s (%s) VALUES (%s)";
 
         return sprintf($q, $t, $f, $v);
+    }
 
-        return "INSERT INTO navigation_timings
-            (url_id,
-            boomerang_version,
-            vis_st,
-            ua_plt,
-            ua_vnd,
-            pid,
-            nt_red_cnt,
-            nt_nav_type,
-            nt_nav_st,
-            nt_red_st,
-            nt_red_end,
-            nt_fet_st,
-            nt_dns_st,
-            nt_dns_end,
-            nt_con_st,
-            nt_con_end,
-            nt_req_st,
-            nt_res_st,
-            nt_res_end,
-            nt_domloading,
-            nt_domint,
-            nt_domcontloaded_st,
-            nt_domcontloaded_end,
-            nt_domcomp,
-            nt_load_st,
-            nt_load_end,
-            nt_unload_st,
-            nt_unload_end,
-            nt_spdy,
-            nt_cinf,
-            nt_first_paint,
-            guid,
-            created_at,
-            user_agent,
-            pt_fp,
-            pt_fcp)
+    public function urlExists(string $url)
+    {
+        return 'SELECT id FROM `navigation_timings_urls` where url = "' . $url . '"';
+    }
 
-            VALUES ('{$navigationTimings['url_id']}',
-            '{$navigationTimings['v']}',
-            '{$navigationTimings['vis_st']}',
-            '{$navigationTimings['ua_plt']}',
-            '{$navigationTimings['ua_vnd']}',
-            '{$navigationTimings['pid']}',
-            '{$navigationTimings['nt_red_cnt']}',
-            '{$navigationTimings['nt_nav_type']}',
-            '{$navigationTimings['nt_nav_st']}',
-            '{$navigationTimings['nt_red_st']}',
-            '{$navigationTimings['nt_red_end']}',
-            '{$navigationTimings['nt_fet_st']}',
-            '{$navigationTimings['nt_dns_st']}',
-            '{$navigationTimings['nt_dns_end']}',
-            '{$navigationTimings['nt_con_st']}',
-            '{$navigationTimings['nt_con_end']}',
-            '{$navigationTimings['nt_req_st']}',
-            '{$navigationTimings['nt_res_st']}',
-            '{$navigationTimings['nt_res_end']}',
-            '{$navigationTimings['nt_domloading']}',
-            '{$navigationTimings['nt_domint']}',
-            '{$navigationTimings['nt_domcontloaded_st']}',
-            '{$navigationTimings['nt_domcontloaded_end']}',
-            '{$navigationTimings['nt_domcomp']}',
-            '{$navigationTimings['nt_load_st']}',
-            '{$navigationTimings['nt_load_end']}',
-            '{$navigationTimings['nt_unload_st']}',
-            '{$navigationTimings['nt_unload_end']}',
-            '{$navigationTimings['nt_spdy']}',
-            '{$navigationTimings['nt_cinf']}',
-            '{$navigationTimings['nt_first_paint']}',
-            '{$navigationTimings['guid']}',
-            '{$navigationTimings['created_at']}',
-            '{$navigationTimings['user_agent']}',
-            '{$navigationTimings['pt_fp']}',
-            '{$navigationTimings['pt_fcp']}');";
+    public function insertUrl(string $url)
+    {
+        return "INSERT INTO `navigation_timings_urls`
+            (url)
+
+            VALUES ('{$url}');";
     }
 
 }

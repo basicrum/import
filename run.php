@@ -30,9 +30,9 @@ class BasicRum_Import
     public function run()
     {
         $csv = new BasicRum_Import_Csv();
-        $beacons = $csv->read(__DIR__ . '/../2018-09-03.csv', 100);
+        $beacons = $csv->read(__DIR__ . '/../2018-09-03.csv');
         $beaconWorker = new BasicRum_Import_Beacon();
-        $beaconWorker->extract($beacons);
+        $navigationTimings = $beaconWorker->extract($beacons);
 
         $resTimings = [];
 
@@ -41,6 +41,13 @@ class BasicRum_Import
                 $resTimings[$key] = $beacon['restiming'];
             }
         }
+
+        $this->importer->save($navigationTimings);
+
+        echo 'end';
+        exit;
+
+        $this->importer->save($segments);
 
         $segments = $this->segmentizer->segmentatize($resTimings);
 

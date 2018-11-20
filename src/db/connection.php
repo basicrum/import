@@ -6,9 +6,9 @@ class BasicRum_Import_Csv_Db_Connection
 {
 
     private $host     = '192.168.99.100';
-    private $username = '';
-    private $password = '';
-    private $database = '';
+    private $username = 'root';
+    private $password = 'root';
+    private $database = 'basicrum_backoffice';
     private $port     = 3306;
 
     /** @var  mysqli */
@@ -31,7 +31,23 @@ class BasicRum_Import_Csv_Db_Connection
      */
     public function run(string $query)
     {
-        return $this->connection->query($query);
+        $res = $this->connection->query($query);
+
+        if (!empty($this->connection->error_list)) {
+            var_dump($query);
+
+            print_r($this->connection->error_list);
+            exit;
+        }
+        return $res;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLastInsertId()
+    {
+        return $this->connection->insert_id;
     }
 
 }
