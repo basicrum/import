@@ -21,8 +21,10 @@ class BasicRum_Import_Beacon
 
     /**
      * @param array $beacons
+     *
+     * @return array
      */
-    public function extract(array &$beacons)
+    public function extract(array $beacons)
     {
         $data = [];
 
@@ -36,11 +38,12 @@ class BasicRum_Import_Beacon
             $beacons[$key] = json_decode(trim(ltrim($beacon[1], "'"), "'\n"), true);
             $beacons[$key]['date'] = $date;
 
-//            $beacons[$key]['restiming']  = !empty($beacons[$key]['restiming']) ?
-//                $this->resourceTiming->extractPairs(json_decode($beacons[$key]['restiming'], true))
-//                : [];
+            $data[$key] = $this->navigationTimingsNormalizer->normalize($beacons[$key]);
 
-            $data[] = $this->navigationTimingsNormalizer->normalize($beacons[$key]);
+            // Attach Resources
+            $data[$key]['restiming']  = !empty($beacons[$key]['restiming']) ?
+                $this->resourceTiming->extractPairs(json_decode($beacons[$key]['restiming'], true))
+                : [];
         }
 
         return $data;

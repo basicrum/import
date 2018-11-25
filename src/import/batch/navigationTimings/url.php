@@ -1,0 +1,112 @@
+<?php
+
+declare(strict_types=1);
+
+class BasicRum_Import_Import_Batch_NavigationTimings_Url
+{
+
+    /** @var BasicRum_Import_Csv_Db_Connection */
+    private $_connection;
+
+    /** @var array */
+    private $_urlsPairs = [];
+
+    /** @var int */
+    private $_pairsCount = 0;
+
+    public function __construct(BasicRum_Import_Csv_Db_Connection $connection)
+    {
+        $this->_connection = $connection;
+
+        $this->_reloadPairs();
+
+        $this->_pairsCount = count($this->_urlsPairs);
+    }
+
+
+    /**
+     * Returns pair ['navigation timing key array key' => 'url id']
+     *
+     * @param array $data
+     *
+     * @return array
+     */
+    public function insertUrls(array $data)
+    {
+        $pairs = [];
+
+        $newUrlsForInsert = [];
+
+        foreach ($data as $key => $row) {
+            $url = $row['url'];
+
+            if (isset($this->_urlsPairs[$url])) {
+                $pairs[$key] = $this->_urlsPairs[$url];
+            } else {
+//                var_dump($this->_urlsPairs[$url]);
+//
+//                var_dump($url);
+//
+//                var_dump($this->_urlsPairs);
+//
+//                exit;
+
+
+                $this->_pairsCount++;
+                $newUrlsForInsert[$key] = $url;
+
+                // Speculatively append to current url pairs
+                $this->_urlsPairs[$url] = $this->_pairsCount;
+                $pairs[$key] = $this->_pairsCount;
+            }
+        }
+
+        $q = $this->_insertNewUrlsQuery($newUrlsForInsert);
+
+        $this->_connection->run($q);
+
+        return $pairs;
+    }
+
+    private function _reloadPairs()
+    {
+        $q = "SELECT id, url from navigation_timings_urls";
+
+        $res = $this->_connection->run($q);
+
+        /** @todo: Idea we may not iterate in order to fill $this->_urlsPairs
+         * but we can use offset $key + 1 to identify the URL primary key.
+         *
+         * Not sure how much speed we can save from this.
+         */
+        $data = $res->fetch_all();
+
+        foreach ($data as $row) {
+            $this->_urlsPairs[$row[1]] = $row[0];
+        }
+    }
+
+    /**
+     * @param array $urls
+     *
+     * @return string
+     */
+    private function _insertNewUrlsQuery(array $urls)
+    {
+        return "INSERT INTO navigation_timings_urls
+            (url)
+
+            VALUES ('" . $this->_generateValues($urls) . "')";
+    }
+
+    /**
+     * @param array $urls
+     * @return string
+     */
+    private function _generateValues(array $urls)
+    {
+        return implode("'),('", $urls);
+    }
+
+
+}

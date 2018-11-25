@@ -64,11 +64,19 @@ class BasicRum_Import_Csv_Query_NavigationTimings
         return sprintf($q, $t, $f, $v);
     }
 
+    /**
+     * @param string $url
+     * @return string
+     */
     public function urlExists(string $url)
     {
         return 'SELECT id FROM `navigation_timings_urls` where url = "' . $url . '"';
     }
 
+    /**
+     * @param string $url
+     * @return string
+     */
     public function insertUrl(string $url)
     {
         return "INSERT INTO `navigation_timings_urls`

@@ -5,7 +5,7 @@ declare(strict_types=1);
 class BasicRum_Import_Csv_Db_Connection
 {
 
-    private $host     = '192.168.99.100';
+    private $host     = 'p:192.168.99.100';
     private $username = 'root';
     private $password = 'root';
     private $database = 'basicrum_backoffice';

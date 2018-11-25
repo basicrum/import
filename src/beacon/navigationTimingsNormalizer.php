@@ -74,6 +74,12 @@ class BasicRum_Import_Beacon_NavigationTimingsNormalizer
             $entries['created_at'] = $navigationTiming['date'];
         }
 
+        if (!empty($navigationTiming['guid'])) {
+            $entries['guid'] = $navigationTiming['guid'];
+        } else {
+            $entries['guid'] = '';
+        }
+
         //Exceptions
         if ($entries['first_byte'] < 0) {
             $entries['first_byte'] = 0;
@@ -93,6 +99,14 @@ class BasicRum_Import_Beacon_NavigationTimingsNormalizer
 
         if ($entries['first_paint'] > 65535) {
             $entries['first_paint'] = 65535;
+        }
+
+        if ($entries['dns_duration'] < 0) {
+            $entries['dns_duration'] = 0;
+        }
+
+        if ($entries['dns_duration'] > 65535) {
+            $entries['dns_duration'] = 65535;
         }
 
         if ($entries['first_contentful_paint'] > 65535) {

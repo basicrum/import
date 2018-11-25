@@ -10,7 +10,6 @@ class BasicRum_Import_Csv_Query_TableSegmentation
         $createTable =
 "CREATE TABLE IF NOT EXISTS `resource_timings_segment_%s` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `page_view_id` int(11) NOT NULL,
   `base36` char(%s) COLLATE ascii_bin NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii COLLATE=ascii_bin ROW_FORMAT=COMPRESSED KEY_BLOCK_SIZE=4;";

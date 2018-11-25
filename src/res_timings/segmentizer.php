@@ -20,21 +20,18 @@ class BasicRum_Import_ResTimings_Segmentizer
             32  => [],
             64  => [],
             128 => [],
-            256 => [],
-            512 => []
+            255 => []
         ];
 
         $segments = array_keys($groups);
 
-        foreach ($resTimings as $resource) {
-            foreach ($resource as $timing) {
-                $length = strlen($timing);
+        foreach ($resTimings as $url => $resource) {
+            $length = strlen($resource);
 
-                foreach ($segments as $segment) {
-                    if ($length < $segment ) {
-                        $groups[$segment][] = $resource;
-                        break;
-                    }
+            foreach ($segments as $segment) {
+                if ($length < $segment ) {
+                    $groups[$segment][$url] = $resource;
+                    break;
                 }
             }
         }
