@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-class BasicRum_Import_Import_Batch_NavigationTimings_Url
+class BasicRum_Import_Import_Batch_ResourceTimings_Url
 {
 
     /** @var BasicRum_Import_Csv_Db_Connection */
@@ -38,7 +38,7 @@ class BasicRum_Import_Import_Batch_NavigationTimings_Url
         $newUrlsForInsert = [];
 
         foreach ($data as $key => $row) {
-            $url = $row['url'];
+            $url = $key;
 
             if (isset($this->_urlsPairs[$url])) {
                 $pairs[$key] = $this->_urlsPairs[$url];
@@ -63,7 +63,7 @@ class BasicRum_Import_Import_Batch_NavigationTimings_Url
 
     private function _reloadPairs()
     {
-        $q = "SELECT id, url from navigation_timings_urls";
+        $q = "SELECT id, url from resource_timings_urls";
 
         $res = $this->_connection->run($q);
 
@@ -86,7 +86,7 @@ class BasicRum_Import_Import_Batch_NavigationTimings_Url
      */
     private function _insertNewUrlsQuery(array $urls)
     {
-        return "INSERT INTO navigation_timings_urls
+        return "INSERT INTO resource_timings_urls
             (url)
 
             VALUES ('" . $this->_generateValues($urls) . "')";
@@ -100,6 +100,5 @@ class BasicRum_Import_Import_Batch_NavigationTimings_Url
     {
         return implode("'),('", $urls);
     }
-
 
 }

@@ -93,4 +93,15 @@ class BasicRum_Import_Import_Batch_NavigationTimings
         return implode(',', $insert);
     }
 
+    public function getLastId()
+    {
+        $q = "SELECT MAX(`page_view_id`) FROM navigation_timings";
+
+        $res = $this->_connection->run($q);
+
+        $data = $res->fetch_row();
+
+        return !empty($data[0]) ? (int) $data[0] : 0;
+    }
+
 }
