@@ -38,7 +38,11 @@ class BasicRum_Import_Import_Batch_ResourceTimings_Url
         $newUrlsForInsert = [];
 
         foreach ($data as $key => $row) {
-            $url = $key;
+            /**
+             * @todo: So far I remove the get params to test how much DB space will be saved.
+             * Reconsider anyway save some GET params somewhere in case we want to query them later.
+             */
+            $url = explode('?', $key)[0];
 
             if (isset($this->_urlsPairs[$url])) {
                 $pairs[$key] = $this->_urlsPairs[$url];
