@@ -16,12 +16,6 @@ class BasicRum_Import
     /** @var \BasicRum_Import_Import_Batch */
     private $batchImporter;
 
-
-    public function __construct()
-    {
-        $this->batchImporter = new BasicRum_Import_Import_Batch();
-    }
-
     public function run()
     {
         /**
@@ -34,6 +28,8 @@ class BasicRum_Import
         if (isset($cliOption['reset-db'])) {
             $this->_truncate();
         }
+
+        $this->batchImporter = new BasicRum_Import_Import_Batch();
 
         $importLinesCount = !empty($cliOption['lines']) ? (int) $cliOption['lines'] : false;
 

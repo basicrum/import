@@ -34,75 +34,48 @@ class BasicRum_Import_Import_Batch_ResourceTimings
     public function batchInsert(array $batch, int $lastPageViewId)
     {
         $resourcesBatch = [];
+        $batchUrls = [];
 
         // Basic filtering for rows that have restiming
         foreach ($batch as $key => $row) {
             if (!empty($row['restiming'])) {
-                $resourcesBatch[$key] = $row['restiming'];
+                $viewResources = $this->_resourceDecompressor->decompressResources($row['restiming']);
+
+                // Filling URLs list for batch
+                foreach ($viewResources as $resource) {
+                    $batchUrls[$resource['name']] = 1;
+                }
+
+                $resourcesBatch[$key] = $viewResources;
             }
-        }
-
-        // Test decompress
-        foreach ($resourcesBatch as $key => $row) {
-            $pageViewId = $key + $lastPageViewId;
-
-
-            //if ($pageViewId === 342) {
-                $decompressed = $this->_resourceDecompressor->decompressResources($row);
-                print_r($decompressed);
-            //}
-        }
-
-        exit;
-
-        $batchUrls = [];
-
-        foreach ($resourcesBatch as $row) {
-            $batchUrls = array_merge($batchUrls, $row);
         }
 
         $batchUrlsParis = $this->_prepareUrlIds($batchUrls);
 
         $batchInsertArray = [];
 
-        foreach ($resourcesBatch as $key => $resource) {
+        foreach ($resourcesBatch as $key => $viewResources) {
             $pageViewId = $key + $lastPageViewId;
-
-
-            $resources = [];
 
             $startTime = 0;
 
-            $tmingsData = [];
-
-            foreach ($resource as $url => $timing) {
-                if ($pageViewId === 342 && 208 == $batchUrlsParis[$url]) {
-                    var_dump($batchUrlsParis[$url]);
-                    var_dump($timing);
-                    var_dump($url);
-                    $t = $this->_resourceDecompressor->decodeCompressedResource($timing, 2180);
-                    var_dump($t);
-                }
-
-                $tmingsData[] = $this->_resourceDecompressor->decodeCompressedResource($timing, $batchUrlsParis[$url]);
-            }
-
-
+            $tmingsData = $viewResources;
 
             // Sort by starting time
             usort($tmingsData, function($a, $b) {
                 return $a['startTime'] - $b['startTime'];
             });
 
-            if ($pageViewId === 342) {
-//                print_r($resource);
+//            if ($pageViewId === 342) {
 //                print_r($tmingsData);
-            }
+//            }
+
+            $resources = [];
 
             foreach ($tmingsData as $timingData) {
 
                 $insertData = [
-                    'url_id'      => $timingData['name'],
+                    'url_id' => $batchUrlsParis[$timingData['name']]
                 ];
 
                 if ($timingData['startTime'] === 0 ) {
