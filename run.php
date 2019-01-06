@@ -35,8 +35,6 @@ class BasicRum_Import
             $this->_truncate();
         }
 
-        exit;
-
         $importLinesCount = !empty($cliOption['lines']) ? (int) $cliOption['lines'] : false;
 
         $csv = new BasicRum_Import_Csv();
