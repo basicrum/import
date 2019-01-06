@@ -23,8 +23,17 @@ class BasicRum_Import
 
     public function run()
     {
+        /**
+         * Pass and read CLI arguments
+         *
+         * php run.php --lines=200 --reset-db
+         */
+        $cliOption = getopt('',['lines:', 'reset-db']);
+
+        $importLinesCount = !empty($cliOption['lines']) ? (int) $cliOption['lines'] : false;
+
         $csv = new BasicRum_Import_Csv();
-        $beacons = $csv->read(__DIR__ . '/../hl/2018-12-09.csv');
+        $beacons = $csv->read(__DIR__ . '/../hl/2018-12-09.csv', $importLinesCount);
         $beaconWorker = new BasicRum_Import_Beacon();
         $timings = $beaconWorker->extract($beacons);
 
