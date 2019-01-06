@@ -101,12 +101,32 @@ class BasicRum_Import_Beacon_NavigationTimingsNormalizer
             $entries['first_paint'] = 65535;
         }
 
+        if ($entries['first_paint'] < 0) {
+            $entries['first_paint'] = 0;
+        }
+
+        if ($entries['connect_duration'] > 65535) {
+            $entries['connect_duration'] = 65535;
+        }
+
+        if ($entries['connect_duration'] < 0) {
+            $entries['connect_duration'] = 0;
+        }
+
         if ($entries['dns_duration'] < 0) {
             $entries['dns_duration'] = 0;
         }
 
         if ($entries['dns_duration'] > 65535) {
             $entries['dns_duration'] = 65535;
+        }
+
+        if ($entries['redirect_duration'] < 0) {
+            $entries['redirect_duration'] = 0;
+        }
+
+        if ($entries['redirect_duration'] > 65535) {
+            $entries['redirect_duration'] = 65535;
         }
 
         if ($entries['first_contentful_paint'] > 65535) {

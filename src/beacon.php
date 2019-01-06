@@ -2,20 +2,15 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/beacon/resourceTimingString.php';
 require_once __DIR__ . '/beacon/navigationTimingsNormalizer.php';
 
 class BasicRum_Import_Beacon
 {
 
-    /** @var \ResourceTimingString */
-    private $resourceTiming;
-
     private $navigationTimingsNormalizer;
 
     public function __construct()
     {
-        $this->resourceTiming              = new ResourceTimingString();
         $this->navigationTimingsNormalizer = new BasicRum_Import_Beacon_NavigationTimingsNormalizer();
     }
 
@@ -42,7 +37,7 @@ class BasicRum_Import_Beacon
 
             // Attach Resources
             $data[$key]['restiming']  = !empty($beacons[$key]['restiming']) ?
-                $this->resourceTiming->extractPairs(json_decode($beacons[$key]['restiming'], true))
+                json_decode($beacons[$key]['restiming'], true)
                 : [];
         }
 

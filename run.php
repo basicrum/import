@@ -7,30 +7,28 @@ ini_set('memory_limit',  '-1');
 
 require_once __DIR__ . '/src/csv.php';
 require_once __DIR__ . '/src/beacon.php';
-require_once __DIR__ . '/src/importer.php';
 require_once __DIR__ . '/src/import/batch.php';
 
 class BasicRum_Import
 {
 
-    /** @var \BasicRum_Import_Importer */
-    private $importer;
+    /** @var \BasicRum_Import_Import_Batch */
+    private $batchImporter;
 
 
     public function __construct()
     {
-        //$this->importer    = new BasicRum_Import_Importer();
-        $this->importer    = new BasicRum_Import_Import_Batch(400);
+        $this->batchImporter = new BasicRum_Import_Import_Batch();
     }
 
     public function run()
     {
         $csv = new BasicRum_Import_Csv();
-        $beacons = $csv->read(__DIR__ . '/../2018-09-03.csv');
+        $beacons = $csv->read(__DIR__ . '/../hl/2018-12-09.csv');
         $beaconWorker = new BasicRum_Import_Beacon();
         $timings = $beaconWorker->extract($beacons);
 
-        $this->importer->save($timings);
+        $this->batchImporter->save($timings);
     }
 
 }

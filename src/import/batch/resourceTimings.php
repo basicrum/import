@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/resourceTimings/url.php';
+require_once __DIR__ . '/../../lib/resourcetimingDecompression.0.3.4.php';
 
 class BasicRum_Import_Import_Batch_ResourceTimings
 {
@@ -10,18 +11,20 @@ class BasicRum_Import_Import_Batch_ResourceTimings
     /** @var BasicRum_Import_Csv_Db_Connection */
     private $_connection;
 
-    /**
-     * @var BasicRum_Import_Import_Batch_ResourceTimings
-     */
+    /** @var BasicRum_Import_Import_Batch_ResourceTimings */
     private $_resourceTimingsUrlModel;
+
+    /** @var ResourceTimingDecompression_v_0_3_4 */
+    private $_resourceDecompressor;
 
     /**
      * @param BasicRum_Import_Csv_Db_Connection $connection
      */
     public function __construct(BasicRum_Import_Csv_Db_Connection $connection)
     {
-        $this->_connection = $connection;
+        $this->_connection              = $connection;
         $this->_resourceTimingsUrlModel = new BasicRum_Import_Import_Batch_ResourceTimings_Url($connection);
+        $this->_resourceDecompressor    = new ResourceTimingDecompression_v_0_3_4();
     }
 
     /**
@@ -39,6 +42,19 @@ class BasicRum_Import_Import_Batch_ResourceTimings
             }
         }
 
+        // Test decompress
+        foreach ($resourcesBatch as $key => $row) {
+            $pageViewId = $key + $lastPageViewId;
+
+
+            //if ($pageViewId === 342) {
+                $decompressed = $this->_resourceDecompressor->decompressResources($row);
+                print_r($decompressed);
+            //}
+        }
+
+        exit;
+
         $batchUrls = [];
 
         foreach ($resourcesBatch as $row) {
@@ -52,14 +68,71 @@ class BasicRum_Import_Import_Batch_ResourceTimings
         foreach ($resourcesBatch as $key => $resource) {
             $pageViewId = $key + $lastPageViewId;
 
+
+            $resources = [];
+
+            $startTime = 0;
+
+            $tmingsData = [];
+
             foreach ($resource as $url => $timing) {
-                $batchInsertArray[] = [
-                    'page_view_id' => $pageViewId,
-                    'url_id'       => $batchUrlsParis[$url],
-                    'trai_id'      => 0,
-                    'trai_type'    => 4
-                ];
+                if ($pageViewId === 342 && 208 == $batchUrlsParis[$url]) {
+                    var_dump($batchUrlsParis[$url]);
+                    var_dump($timing);
+                    var_dump($url);
+                    $t = $this->_resourceDecompressor->decodeCompressedResource($timing, 2180);
+                    var_dump($t);
+                }
+
+                $tmingsData[] = $this->_resourceDecompressor->decodeCompressedResource($timing, $batchUrlsParis[$url]);
             }
+
+
+
+            // Sort by starting time
+            usort($tmingsData, function($a, $b) {
+                return $a['startTime'] - $b['startTime'];
+            });
+
+            if ($pageViewId === 342) {
+//                print_r($resource);
+//                print_r($tmingsData);
+            }
+
+            foreach ($tmingsData as $timingData) {
+
+                $insertData = [
+                    'url_id'      => $timingData['name'],
+                ];
+
+                if ($timingData['startTime'] === 0 ) {
+                    $insertData['start'] = '';
+                } else {
+                    $offset = $timingData['startTime'] - $startTime;
+                    if ($offset > 0) {
+                        $insertData['start'] = base_convert($offset, 10, 36);
+                    } else {
+                        $insertData['start'] = '';
+                    }
+                }
+
+                if ($timingData['duration'] !== 0 ) {
+                    $insertData['end'] = base_convert($timingData['duration'], 10, 36);
+                }
+
+                if (!isset($insertData['end']) && $insertData['start'] == '') {
+                    unset($insertData['start']);
+                }
+
+                $resources[] = implode(',', $insertData);
+
+                $startTime = $timingData['startTime'];
+            }
+
+            $batchInsertArray[] = [
+                'page_view_id'     => $pageViewId,
+                'resource_timings' => implode(';',$resources),
+            ];
         }
 
         $q = $this->_insert($batchInsertArray);
