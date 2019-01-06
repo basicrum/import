@@ -8,6 +8,7 @@ ini_set('memory_limit',  '-1');
 require_once __DIR__ . '/src/csv.php';
 require_once __DIR__ . '/src/beacon.php';
 require_once __DIR__ . '/src/import/batch.php';
+require_once __DIR__ . '/src/truncate.php';
 
 class BasicRum_Import
 {
@@ -30,6 +31,12 @@ class BasicRum_Import
          */
         $cliOption = getopt('',['lines:', 'reset-db']);
 
+        if (isset($cliOption['reset-db'])) {
+            $this->_truncate();
+        }
+
+        exit;
+
         $importLinesCount = !empty($cliOption['lines']) ? (int) $cliOption['lines'] : false;
 
         $csv = new BasicRum_Import_Csv();
@@ -38,6 +45,18 @@ class BasicRum_Import
         $timings = $beaconWorker->extract($beacons);
 
         $this->batchImporter->save($timings);
+    }
+
+    private function _truncate()
+    {
+        $truncator = new BasicRum_Import_Truncate();
+        $tables = $truncator->truncateAll();
+
+        echo "Truncated tables: \n";
+
+        foreach ($tables as $table) {
+            echo " - " . $table . "\n";
+        }
     }
 
 }
