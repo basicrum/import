@@ -15,7 +15,8 @@ class BasicRum_Import_Truncate
             'navigation_timings',
             'navigation_timings_urls',
             'resource_timings',
-            'resource_timings_urls'
+            'resource_timings_urls',
+            'navigation_timings_user_agents'
 
         ];
 
