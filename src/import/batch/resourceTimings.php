@@ -33,6 +33,8 @@ class BasicRum_Import_Import_Batch_ResourceTimings
      */
     public function batchInsert(array $batch, int $lastPageViewId)
     {
+        $lastPageViewIdStartOffset = $lastPageViewId + 1;
+
         $resourcesBatch = [];
         $batchUrls = [];
 
@@ -55,7 +57,7 @@ class BasicRum_Import_Import_Batch_ResourceTimings
         $batchInsertArray = [];
 
         foreach ($resourcesBatch as $key => $viewResources) {
-            $pageViewId = $key + $lastPageViewId;
+            $pageViewId = $key + $lastPageViewIdStartOffset;
 
             $startTime = 0;
 
@@ -65,10 +67,6 @@ class BasicRum_Import_Import_Batch_ResourceTimings
             usort($tmingsData, function($a, $b) {
                 return $a['startTime'] - $b['startTime'];
             });
-
-//            if ($pageViewId === 342) {
-//                print_r($tmingsData);
-//            }
 
             $resources = [];
 
