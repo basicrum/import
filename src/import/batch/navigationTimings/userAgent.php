@@ -46,7 +46,19 @@ class BasicRum_Import_Import_Batch_NavigationTimings_UserAgent
                 $pairs[$key] = $this->_userAgentsPairs[$userAgent];
             } else {
                 $this->_pairsCount++;
-                $newUserAgentsForInsert[$key] = $userAgent;
+
+                $result = new WhichBrowser\Parser($userAgent);
+
+                $newUserAgentsForInsert[$key] = [
+                    'user_agent'          => $userAgent,
+                    'device_type'         => $result->device->type,
+                    'device_model'        => $result->device->model,
+                    'device_manufacturer' => $result->device->getManufacturer(),
+                    'browser_name'        => $result->browser->getName(),
+                    'browser_version'     => $result->browser->getVersion(),
+                    'os_name'             => $result->os->getName(),
+                    'os_version'          => $result->os->getVersion()
+                ];
 
                 // Speculatively append to current user agent pairs
                 $this->_userAgentsPairs[$userAgent] = $this->_pairsCount;
@@ -88,10 +100,14 @@ class BasicRum_Import_Import_Batch_NavigationTimings_UserAgent
      */
     private function _insertNewUserAgentsQuery(array $userAgents)
     {
-        return "INSERT INTO navigation_timings_user_agents
-            (user_agent)
+        $fieldsArr =  array_keys($userAgents[key($userAgents)]);
 
-            VALUES ('" . $this->_generateValues($userAgents) . "')";
+        $fields = implode(',', $fieldsArr);
+
+        return "INSERT INTO navigation_timings_user_agents
+            ({$fields})
+
+            VALUES " . $this->_generateValues($userAgents);
     }
 
     /**
@@ -100,7 +116,16 @@ class BasicRum_Import_Import_Batch_NavigationTimings_UserAgent
      */
     private function _generateValues(array $userAgents)
     {
-        return implode("'),('", $userAgents);
+        $insert = [];
+
+        foreach ($userAgents as $data) {
+
+            $values = implode("','", $data);
+
+            $insert[] = "('{$values}')";
+        }
+
+        return implode(',', $insert);
     }
 
 
