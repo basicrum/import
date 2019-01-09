@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require __DIR__ . '/../../../../vendor/autoload.php';
+
 class BasicRum_Import_Import_Batch_NavigationTimings_UserAgent
 {
 
