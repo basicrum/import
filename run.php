@@ -18,12 +18,23 @@ class BasicRum_Import
 
     public function run()
     {
+        $time_start = microtime(true);
+
         /**
          * Pass and read CLI arguments
          *
-         * php run.php --lines=200 --reset-db
+         * php run.php --lines=400 --reset-db
          */
-        $cliOption = getopt('',['lines:', 'reset-db']);
+        $cliOption = getopt('',['lines:', 'reset-db', 'file:']);
+
+        $file = !empty($cliOption['file']) ? $cliOption['file'] : false;
+
+        if (!$file) {
+            echo "Please specify file name e.g. \"php run.php --file=import-22.csv \"\n";
+            exit;
+        }
+
+        echo "Importing: " . $file . "\n";
 
         if (isset($cliOption['reset-db'])) {
             $this->_truncate();
@@ -34,11 +45,14 @@ class BasicRum_Import
         $importLinesCount = !empty($cliOption['lines']) ? (int) $cliOption['lines'] : false;
 
         $csv = new BasicRum_Import_Csv();
-        $beacons = $csv->read(__DIR__ . '/../hl/2018-12-09.csv', $importLinesCount);
+        $beacons = $csv->read($file, $importLinesCount);
         $beaconWorker = new BasicRum_Import_Beacon();
         $timings = $beaconWorker->extract($beacons);
 
         $this->batchImporter->save($timings);
+
+        echo 'Imported in seconds: ' . (microtime(true) - $time_start) . "\n";
+        echo "------------------------------------------------------------\n";
     }
 
     private function _truncate()
