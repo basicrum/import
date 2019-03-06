@@ -41,10 +41,11 @@ class BasicRum_Import_Beacon
 
             // We do not mark as page view beacons send when visitor leaves page
             if (isset ($this->pageViewUniqueKeys[$pageViewKey])) {
+                $this->pageViewUniqueKeys[$pageViewKey] = array_merge($this->pageViewUniqueKeys[$pageViewKey], ['end' => $date]);
                 continue;
             }
 
-            $this->pageViewUniqueKeys[$pageViewKey] = true;
+            $this->pageViewUniqueKeys[$pageViewKey] = ['start' => $date];
 
             $data[$key] = $this->navigationTimingsNormalizer->normalize($beacons[$key]);
 
@@ -55,6 +56,45 @@ class BasicRum_Import_Beacon
         }
 
         return $data;
+    }
+
+    public function extractPageVisitDurations(array $beacons)
+    {
+        foreach ($beacons as $key => $beacon) {
+            if (false === $beacon) {
+                continue;
+            }
+
+            $date = trim($beacon[0], "'");
+
+            $beacons[$key] = json_decode(trim(ltrim($beacon[1], "'"), "'\n"), true);
+            $beacons[$key]['date'] = $date;
+
+            $pageViewKey = $this->_getPageViewKey($beacons[$key]);
+
+            // We do not mark as page view beacons send when visitor leaves page
+            if (isset ($this->pageViewUniqueKeys[$pageViewKey])) {
+                $this->pageViewUniqueKeys[$pageViewKey] = array_merge($this->pageViewUniqueKeys[$pageViewKey], ['end' => $date]);
+                continue;
+            }
+
+            $this->pageViewUniqueKeys[$pageViewKey] = [
+                'start' => $date,
+                'guid'  => $beacons[$key]['guid'],
+                'pid'   => $beacons[$key]['pid'],
+                'date'  => $date
+            ];
+        }
+
+        return $this->pageViewUniqueKeys;
+    }
+
+    /**
+     * @return array
+     */
+    public function getPageViewStartEndTimes()
+    {
+        return $this->pageViewUniqueKeys;
     }
 
     private function _getPageViewKey(array $data)

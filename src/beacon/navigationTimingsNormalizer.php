@@ -13,6 +13,7 @@ class BasicRum_Import_Beacon_NavigationTimingsNormalizer
         'redirect_duration'  => ['nt_red_end', 'nt_red_st'],
         'last_byte_duration' => ['nt_res_end', 'nt_nav_st'],
         'first_paint'        => ['nt_first_paint', 'nt_nav_st'],
+        'load_event_end'     => ['nt_load_end', 'nt_nav_st']
 //        'response_duration'            => [],
 //        'document_processing_duration' => [],
 //        'on_load_duration'             => []
@@ -81,6 +82,14 @@ class BasicRum_Import_Beacon_NavigationTimingsNormalizer
         }
 
         //Exceptions
+        if ($entries['load_event_end'] < 0) {
+            $entries['load_event_end'] = 0;
+        }
+
+        if ($entries['load_event_end'] > 65535) {
+            $entries['load_event_end'] = 65535;
+        }
+
         if ($entries['first_byte'] < 0) {
             $entries['first_byte'] = 0;
         }

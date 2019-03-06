@@ -48,7 +48,7 @@ class BasicRum_Import_Import_Batch_ResourceTimings_Url
                 $pairs[$key] = $this->_urlsPairs[$url];
             } else {
                 $this->_pairsCount++;
-                $newUrlsForInsert[$key] = $url;
+                $newUrlsForInsert[$key] = mysqli_real_escape_string($this->_connection->getConnection(), $url);
 
                 // Speculatively append to current url pairs
                 $this->_urlsPairs[$url] = $this->_pairsCount;

@@ -8,7 +8,7 @@ class BasicRum_Import_Csv_Db_Connection
     private $host     = 'p:192.168.99.100';
     private $username = 'root';
     private $password = 'root';
-    private $database = 'basicrum_backoffice_hl';
+    private $database = 'basic_rum_test_db';
     private $port     = 3306;
 
     /** @var  mysqli */
@@ -23,6 +23,14 @@ class BasicRum_Import_Csv_Db_Connection
             $this->database,
             $this->port
         );
+    }
+
+    /**
+     * @return mysqli
+     */
+    public function getConnection()
+    {
+        return $this->connection;
     }
 
     /**

@@ -6,8 +6,10 @@ ini_set('display_errors', '1');
 ini_set('memory_limit',  '-1');
 
 require_once __DIR__ . '/src/csv.php';
+require_once __DIR__ . '/src/reader/compactJson.php';
 require_once __DIR__ . '/src/beacon.php';
 require_once __DIR__ . '/src/import/batch.php';
+require_once __DIR__ . '/src/import/update.php';
 require_once __DIR__ . '/src/truncate.php';
 
 class BasicRum_Import
@@ -25,7 +27,7 @@ class BasicRum_Import
          *
          * php run.php --lines=400 --reset-db
          */
-        $cliOption = getopt('',['lines:', 'reset-db', 'file:']);
+        $cliOption = getopt('',['lines:', 'reset-db', 'file:', 'update-mode']);
 
         $file = !empty($cliOption['file']) ? $cliOption['file'] : false;
 
@@ -46,10 +48,28 @@ class BasicRum_Import
 
         $csv = new BasicRum_Import_Csv();
         $beacons = $csv->read($file, $importLinesCount);
-        $beaconWorker = new BasicRum_Import_Beacon();
-        $timings = $beaconWorker->extract($beacons);
 
-        $this->batchImporter->save($timings);
+
+//        $reader = new BasicRum_Import_Reader_CompactJson();
+//        $beacons = $reader->read($file, $importLinesCount);
+
+        $beaconWorker = new BasicRum_Import_Beacon();
+
+        if (isset($cliOption['update-mode'])) {
+            $durations = $beaconWorker->extractPageVisitDurations($beacons);
+
+            $timings = $beaconWorker->extract($beacons);
+            $updater = new BasicRum_Import_Import_Update();
+            $updater->updateDocumentReady($timings);
+
+            $updater->updatePageVisitsDuration($durations);
+        } else {
+            $timings = $beaconWorker->extract($beacons);
+            $this->batchImporter->save($timings);
+            $durations = $beaconWorker->extractPageVisitDurations($beacons);
+            $updater = new BasicRum_Import_Import_Update();
+            $updater->updatePageVisitsDuration($durations);
+        }
 
         echo 'Imported in seconds: ' . (microtime(true) - $time_start) . "\n";
         echo "------------------------------------------------------------\n";

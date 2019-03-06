@@ -67,7 +67,6 @@ class BasicRum_Import_Import_Batch
 
         $this->_navigationTimings->batchInsert($views);
         $this->_resourceTimings->batchInsert($views, $lastPageViewId);
-
     }
 
 }
