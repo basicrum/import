@@ -29,16 +29,7 @@ class BasicRum_Import_Batch_NavigationTimings_OperatingSystem
             $name = 'Unknown';
         }
 
-        var_dump($name);
-
-
         $code = $this->getCodeByName($name);
-
-        var_dump($code);
-
-        var_dump($this->osCodeIdMap);
-
-
 
         return isset($this->osCodeIdMap[$code]) ?
             $this->osCodeIdMap[$code] : $this->insertOs($name, $code);

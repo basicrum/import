@@ -19,7 +19,8 @@ class BasicRum_Import_Truncate
             'navigation_timings_user_agents',
             'operating_systems',
             'device_types',
-            'visits_overview'
+            'visits_overview',
+            'navigation_timings_query_params'
         ];
 
         foreach ($tables as $table) {

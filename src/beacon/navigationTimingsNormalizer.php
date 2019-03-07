@@ -60,7 +60,13 @@ class BasicRum_Import_Beacon_NavigationTimingsNormalizer
         }
 
         if (!empty($navigationTiming['u'])) {
-            $entries['url'] = explode("?", $navigationTiming['u'])[0];
+            $urlParts =  explode("?", $navigationTiming['u']);
+
+            $entries['url'] = $urlParts[0];
+
+            if (!empty($urlParts[1])) {
+                $entries['query_params'] = $urlParts[1];
+            }
         }
 
         if (!empty($navigationTiming['user_agent'])) {

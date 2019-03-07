@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/navigationTimings/url.php';
 require_once __DIR__ . '/navigationTimings/userAgent.php';
+require_once __DIR__ . '/navigationTimings/queryParams.php';
 
 class BasicRum_Import_Import_Batch_NavigationTimings
 {
@@ -23,13 +24,19 @@ class BasicRum_Import_Import_Batch_NavigationTimings
     private $_navigationTimingsUserAgentModel;
 
     /**
+     * @var BasicRum_Import_Batch_NavigationTimings_QueryParams
+     */
+    private $_queryParamsModel;
+
+    /**
      * @param BasicRum_Import_Csv_Db_Connection $connection
      */
     public function __construct(BasicRum_Import_Csv_Db_Connection $connection)
     {
         $this->_connection = $connection;
-        $this->_navigationTimingsUrlModel = new BasicRum_Import_Import_Batch_NavigationTimings_Url($connection);
+        $this->_navigationTimingsUrlModel       = new BasicRum_Import_Import_Batch_NavigationTimings_Url($connection);
         $this->_navigationTimingsUserAgentModel = new BasicRum_Import_Import_Batch_NavigationTimings_UserAgent($connection);
+        $this->_queryParamsModel                = new BasicRum_Import_Batch_NavigationTimings_QueryParams($connection);
     }
 
     /**
@@ -37,6 +44,7 @@ class BasicRum_Import_Import_Batch_NavigationTimings
      */
     public function batchInsert(array $batch)
     {
+        $this->_queryParamsModel->batchInsert($batch, $this->getLastId());
         $batch = $this->_prepareUrlIds($batch);
         $batch = $this->_prepareUserAgentIds($batch);
         $q = $this->_insert($batch);
@@ -57,6 +65,7 @@ class BasicRum_Import_Import_Batch_NavigationTimings
 
             // For testing purposes
             unset($batch[$key]['restiming']);
+            unset($batch[$key]['query_params']);
 
 
             $batch[$key]['url_id'] = $urls[$key];
