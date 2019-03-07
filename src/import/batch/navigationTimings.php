@@ -71,12 +71,14 @@ class BasicRum_Import_Import_Batch_NavigationTimings
      */
     private function _prepareUserAgentIds(array $batch)
     {
-        $urls = $this->_navigationTimingsUserAgentModel->insertUserAgents($batch);
+        $userAgents = $this->_navigationTimingsUserAgentModel->insertUserAgents($batch);
 
         foreach ($batch as $key => $row) {
             unset($batch[$key]['user_agent']);
 
-            $batch[$key]['user_agent_id'] = $urls[$key];
+            $batch[$key]['user_agent_id']  = $userAgents[$key]['id'];
+            $batch[$key]['device_type_id'] = $userAgents[$key]['device_type_id'];
+            $batch[$key]['os_id']          = $userAgents[$key]['os_id'];
         }
 
         return $batch;

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 require __DIR__ . '/../../../../vendor/autoload.php';
 
+require __DIR__ . '/deviceType.php';
+
 class BasicRum_Import_Import_Batch_NavigationTimings_UserAgent
 {
 
@@ -13,6 +15,9 @@ class BasicRum_Import_Import_Batch_NavigationTimings_UserAgent
     /** @var array */
     private $_userAgentsPairs = [];
 
+    /** @var BasicRum_Import_Batch_NavigationTimings_DeviceType */
+    private $_deviceTypeModel;
+
     /** @var int */
     private $_pairsCount = 0;
 
@@ -21,6 +26,8 @@ class BasicRum_Import_Import_Batch_NavigationTimings_UserAgent
         $this->_connection = $connection;
 
         $this->_reloadPairs();
+        $this->_deviceTypeModel = new BasicRum_Import_Batch_NavigationTimings_DeviceType();
+        $this->_deviceTypeModel->initDbRecords($connection);
 
         $this->_pairsCount = count($this->_userAgentsPairs);
     }
@@ -49,20 +56,30 @@ class BasicRum_Import_Import_Batch_NavigationTimings_UserAgent
 
                 $result = new WhichBrowser\Parser($userAgent);
 
+                $deviceType = !empty($result->device->type) ? $result->device->type : 'unknown';
+                $deviceTypeId = $this->_deviceTypeModel->getDeviceTypeIdByCode($deviceType);
+
                 $newUserAgentsForInsert[$key] = [
                     'user_agent'          => $userAgent,
-                    'device_type'         => $result->device->type,
-                    'device_model'        => $result->device->model,
+                    'device_type'         => $deviceType,
+                    'device_model'        => $result->device->getModel(),
                     'device_manufacturer' => $result->device->getManufacturer(),
                     'browser_name'        => $result->browser->getName(),
                     'browser_version'     => $result->browser->getVersion(),
                     'os_name'             => $result->os->getName(),
-                    'os_version'          => $result->os->getVersion()
+                    'os_version'          => $result->os->getVersion(),
+                    'device_type_id'      => $deviceTypeId,
+                    'os_id'               => 1  //@todo: make this dynamic
                 ];
 
                 // Speculatively append to current user agent pairs
-                $this->_userAgentsPairs[$userAgent] = $this->_pairsCount;
-                $pairs[$key] = $this->_pairsCount;
+                $this->_userAgentsPairs[$userAgent] = [
+                    'id'             => $this->_pairsCount,
+                    'device_type_id' => $deviceTypeId,
+                    'os_id'          => 1 //@todo: make this dynamic
+
+                ];
+                $pairs[$key] = $this->_userAgentsPairs[$userAgent];
             }
         }
 
@@ -77,7 +94,7 @@ class BasicRum_Import_Import_Batch_NavigationTimings_UserAgent
 
     private function _reloadPairs()
     {
-        $q = "SELECT id, user_agent from navigation_timings_user_agents";
+        $q = "SELECT id, user_agent, device_type_id, os_id from navigation_timings_user_agents";
 
         $res = $this->_connection->run($q);
 
@@ -89,7 +106,12 @@ class BasicRum_Import_Import_Batch_NavigationTimings_UserAgent
         $data = $res->fetch_all();
 
         foreach ($data as $row) {
-            $this->_userAgentsPairs[$row[1]] = $row[0];
+            $this->_userAgentsPairs[$row[1]] = [
+                'id'             => $row[0],
+                'device_type_id' => $row[2],
+                'os_id'          => $row[3]
+
+            ];;
         }
     }
 
