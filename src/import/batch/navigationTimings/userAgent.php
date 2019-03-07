@@ -5,6 +5,7 @@ declare(strict_types=1);
 require __DIR__ . '/../../../../vendor/autoload.php';
 
 require __DIR__ . '/deviceType.php';
+require __DIR__ . '/operatingSystem.php';
 
 class BasicRum_Import_Import_Batch_NavigationTimings_UserAgent
 {
@@ -18,6 +19,9 @@ class BasicRum_Import_Import_Batch_NavigationTimings_UserAgent
     /** @var BasicRum_Import_Batch_NavigationTimings_DeviceType */
     private $_deviceTypeModel;
 
+    /** @var BasicRum_Import_Batch_NavigationTimings_OperatingSystem */
+    private $_osModel;
+
     /** @var int */
     private $_pairsCount = 0;
 
@@ -28,6 +32,8 @@ class BasicRum_Import_Import_Batch_NavigationTimings_UserAgent
         $this->_reloadPairs();
         $this->_deviceTypeModel = new BasicRum_Import_Batch_NavigationTimings_DeviceType();
         $this->_deviceTypeModel->initDbRecords($connection);
+
+        $this->_osModel = new BasicRum_Import_Batch_NavigationTimings_OperatingSystem($connection);
 
         $this->_pairsCount = count($this->_userAgentsPairs);
     }
@@ -59,6 +65,8 @@ class BasicRum_Import_Import_Batch_NavigationTimings_UserAgent
                 $deviceType = !empty($result->device->type) ? $result->device->type : 'unknown';
                 $deviceTypeId = $this->_deviceTypeModel->getDeviceTypeIdByCode($deviceType);
 
+                $osId = $this->_osModel->getOsIdByName($result->os->getName());
+
                 $newUserAgentsForInsert[$key] = [
                     'user_agent'          => $userAgent,
                     'device_type'         => $deviceType,
@@ -69,14 +77,14 @@ class BasicRum_Import_Import_Batch_NavigationTimings_UserAgent
                     'os_name'             => $result->os->getName(),
                     'os_version'          => $result->os->getVersion(),
                     'device_type_id'      => $deviceTypeId,
-                    'os_id'               => 1  //@todo: make this dynamic
+                    'os_id'               => $osId
                 ];
 
                 // Speculatively append to current user agent pairs
                 $this->_userAgentsPairs[$userAgent] = [
                     'id'             => $this->_pairsCount,
                     'device_type_id' => $deviceTypeId,
-                    'os_id'          => 1 //@todo: make this dynamic
+                    'os_id'          => $osId
 
                 ];
                 $pairs[$key] = $this->_userAgentsPairs[$userAgent];
