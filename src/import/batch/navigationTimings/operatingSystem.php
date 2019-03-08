@@ -16,7 +16,7 @@ class BasicRum_Import_Batch_NavigationTimings_OperatingSystem
     {
         $this->connection = $connection;
         $this->createTable($connection);
-        $this->reloadCodeIdMap($connection);
+        $this->reloadCodeIdMap();
     }
 
     /**
@@ -31,8 +31,10 @@ class BasicRum_Import_Batch_NavigationTimings_OperatingSystem
 
         $code = $this->getCodeByName($name);
 
-        return isset($this->osCodeIdMap[$code]) ?
+        $id = isset($this->osCodeIdMap[$code]) ?
             $this->osCodeIdMap[$code] : $this->insertOs($name, $code);
+
+        return (int) $id;
     }
 
     /**
@@ -87,10 +89,7 @@ class BasicRum_Import_Batch_NavigationTimings_OperatingSystem
         $connection->run($query);
     }
 
-    /**
-     * @param BasicRum_Import_Csv_Db_Connection $connection
-     */
-    private function reloadCodeIdMap(BasicRum_Import_Csv_Db_Connection $connection)
+    private function reloadCodeIdMap()
     {
         $q = "SELECT `id`, `code` from operating_systems";
 
